@@ -25,6 +25,12 @@ public class TaskBuilder
         _tasks.Add(task);
         return this;
     }
+    
+    public TaskBuilder AddTask(string taskName, Func<TaskContext, Task> func)
+    {
+        _tasks.Add(new LamdaTask(taskName, func));
+        return this;
+    }
 
     public TaskBuilder AddTaskIf<T>(Func<bool> condition) where T : IJobTask
     {
@@ -39,5 +45,15 @@ public class TaskBuilder
     public List<IJobTask> Build()
     {
         return _tasks;
+    }
+    
+    private class LamdaTask(string taskName, Func<TaskContext, Task> func) : IJobTask
+    {
+        public string TaskName { get; } = taskName;
+
+        public async Task ExecuteAsync(TaskContext context)
+        {
+            await func(context);
+        }
     }
 }
